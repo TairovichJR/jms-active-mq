@@ -1,4 +1,4 @@
-package com.tairovich.jms;
+package com.tairovich.jms_1;
 
 import javax.jms.*;
 import javax.naming.InitialContext;

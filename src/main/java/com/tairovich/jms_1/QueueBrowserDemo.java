@@ -1,12 +1,11 @@
-package com.tairovich.jms;
-
-import org.apache.activemq.artemis.jndi.ActiveMQInitialContextFactory;
+package com.tairovich.jms_1;
 
 import javax.jms.*;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import java.util.Enumeration;
 
-public class FirstQueue {
+public class QueueBrowserDemo {
     public static void main(String[] args) {
 
         InitialContext initialContext = null;
@@ -18,16 +17,36 @@ public class FirstQueue {
             Session session = connection.createSession();
             Queue queue = (Queue) initialContext.lookup("queue/myQueue");
             MessageProducer producer = session.createProducer(queue);
-            TextMessage textMessage = session.createTextMessage("I am the creator of this message");
-            producer.send(textMessage);
-            System.out.println("Message Sent: " + textMessage.getText());
+
+            TextMessage textMessage1 = session.createTextMessage("This is message " + (int)(Math.random()*9000)+1000);
+            TextMessage textMessage2 = session.createTextMessage("This is message " + (int)(Math.random()*9000)+1000);
+            TextMessage textMessage3 = session.createTextMessage("This is message " + (int)(Math.random()*9000)+1000);
+            producer.send(textMessage1);
+            producer.send(textMessage2);
+            producer.send(textMessage3);
+
+            QueueBrowser queueBrowser = session.createBrowser(queue);
+
+            Enumeration messagesEnum = queueBrowser.getEnumeration();
+
+            while (messagesEnum.hasMoreElements()){
+                TextMessage m  = (TextMessage)messagesEnum.nextElement();
+                System.out.println("Browsing: " + m.getText());
+            }
 
             MessageConsumer consumer = session.createConsumer(queue);
             connection.start();
+            System.out.println("-----------------------------------------------");
 
             TextMessage receiveMSG = (TextMessage)consumer.receive(5000);
+            System.out.println("Message 1 Received: " + receiveMSG.getText());
 
-            System.out.println("Message Received: " + receiveMSG.getText());
+            receiveMSG = (TextMessage)consumer.receive(5000);
+            System.out.println("Message 2 Received: " + receiveMSG.getText());
+
+            receiveMSG = (TextMessage)consumer.receive(5000);
+            System.out.println("Message 3 Received: " + receiveMSG.getText());
+
 
         } catch (NamingException e) {
             e.printStackTrace();
